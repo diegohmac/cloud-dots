@@ -1,0 +1,34 @@
+{
+  "name": "cloud-dots",
+  "version": "0.1.0",
+  "description": "Render pre-baked 3D scans as animated particle clouds — the dotted-face effect.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Diego Machado",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "cli",
+    "README.md"
+  ],
+  "bin": {
+    "cloud-dots-bake": "cli/bake.mjs"
+  },
+  "scripts": {
+    "dev": "vite example"
+  },
+  "peerDependencies": {
+    "three": ">=0.160.0"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "jpeg-js": "^0.4.4"
+  },
+  "devDependencies": {
+    "lil-gui": "^0.20.0",
+    "three": "^0.182.0",
+    "vite": "^8.0.0"
+  }
+}
