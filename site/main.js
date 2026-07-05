@@ -25,12 +25,6 @@ viewer.ready.then((face) => {
   spin()
 })
 
-// a click anywhere sends a ripple
-window.addEventListener('pointerdown', (e) => {
-  if (e.target.closest('a, button, input, .panel')) return
-  viewer.pulse(2)
-})
-
 // ---- live controls ----
 const bind = (id, key) => {
   document.getElementById(id).addEventListener('input', (e) => {
