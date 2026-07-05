@@ -18,6 +18,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { encodeCloud } from '../src/format.js'
+import { poissonFilter } from '../src/sample.js'
 
 function fail(msg) {
   console.error(`cloud-dots-bake: ${msg}`)
@@ -210,36 +211,9 @@ console.log(`${cand.length / STRIDE} candidates survived luminance rejection`)
 
 let kept = cand
 if (POISSON) {
-  // Blue-noise spacing: drop any candidate closer than r to an already-kept
-  // point. Bright (oversampled) regions settle into even packing; dark regions
-  // stay sparse. Spatial hash grid keeps it O(n).
   const r = Math.sqrt((0.55 * total * 0.5) / TARGET)
-  const r2 = r * r
   console.log(`Poisson filter, min spacing ${r.toFixed(5)}...`)
-  const grid = new Map()
-  const hashKey = (ix, iy, iz) => (ix * 73856093) ^ (iy * 19349663) ^ (iz * 83492791)
-  kept = []
-  for (let i = 0; i < cand.length; i += STRIDE) {
-    const x = cand[i], y = cand[i + 1], z = cand[i + 2]
-    const ix = Math.floor(x / r), iy = Math.floor(y / r), iz = Math.floor(z / r)
-    let ok = true
-    outer: for (let dx = -1; dx <= 1; dx++)
-      for (let dy = -1; dy <= 1; dy++)
-        for (let dz = -1; dz <= 1; dz++) {
-          const bucket = grid.get(hashKey(ix + dx, iy + dy, iz + dz))
-          if (!bucket) continue
-          for (const j of bucket) {
-            const ddx = cand[j] - x, ddy = cand[j + 1] - y, ddz = cand[j + 2] - z
-            if (ddx * ddx + ddy * ddy + ddz * ddz < r2) { ok = false; break outer }
-          }
-        }
-    if (!ok) continue
-    const k = hashKey(ix, iy, iz)
-    let bucket = grid.get(k)
-    if (!bucket) { bucket = []; grid.set(k, bucket) }
-    bucket.push(i)
-    for (let s = 0; s < STRIDE; s++) kept.push(cand[i + s])
-  }
+  kept = poissonFilter(cand, STRIDE, r)
 }
 
 const count = kept.length / STRIDE

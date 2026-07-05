@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cloud-dots — meshes, dissolved into living dots</title>
+    <meta
+      name="description"
+      content="A tiny WebGL library that renders pre-baked 3D scans as animated particle clouds. Bake once, render anywhere."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="stage" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="bar">
+      <a class="bar__mark" href="#top">
+        <span class="bar__dot"></span>cloud&#8209;dots
+      </a>
+      <nav class="bar__nav">
+        <a href="#how">How it works</a>
+        <a href="#api">API</a>
+        <a href="https://github.com/diegohmac/cloud-dots">GitHub&nbsp;&nearr;</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <!-- hero -->
+      <section class="hero">
+        <div class="hero__copy">
+          <p class="hero__kicker">WEBGL &middot; THREE.JS &middot; ESM &middot; MIT</p>
+          <h1>Meshes,<br />dissolved into<br /><em>living dots.</em></h1>
+          <p class="hero__sub">
+            A tiny library that renders pre&#8209;baked 3D scans as animated particle
+            clouds. Bake once with the CLI, then load a single binary and get the
+            dotted portrait effect: depth of field, idle drift, ripples, parallax.
+          </p>
+          <div class="hero__install">
+            <code id="installCmd">npm i github:diegohmac/cloud-dots three</code>
+            <button id="copyBtn" aria-label="Copy install command">COPY</button>
+          </div>
+        </div>
+
+        <aside class="panel" aria-label="Live controls">
+          <p class="panel__title">LIVE &mdash; TRY IT</p>
+          <label>dot size
+            <input type="range" id="ctlSize" min="0.4" max="5" step="0.05" value="1.7" />
+          </label>
+          <label>drift
+            <input type="range" id="ctlDrift" min="0" max="0.02" step="0.0005" value="0.0042" />
+          </label>
+          <label>focus
+            <input type="range" id="ctlFocus" min="0.8" max="2.4" step="0.01" value="1.55" />
+          </label>
+          <label>density
+            <input type="range" id="ctlDensity" min="0.05" max="1" step="0.01" value="1" />
+          </label>
+          <div class="panel__actions">
+            <button id="ctlPulse">PULSE</button>
+            <button id="ctlReplay">REPLAY</button>
+          </div>
+          <p class="panel__hint">or just move your mouse / click the dots</p>
+        </aside>
+      </section>
+
+      <!-- how it works -->
+      <section class="section" id="how">
+        <h2><span>01&ndash;03</span>How it works</h2>
+
+        <div class="steps">
+          <article class="step">
+            <p class="step__num">01 / BAKE</p>
+            <h3>One CLI pass, offline</h3>
+            <p>
+              Point the CLI at an FBX scan. It scatters millions of candidate points
+              across the surface and keeps them where the texture is bright, so the
+              stipple comes from the data itself. An optional blue&#8209;noise pass packs
+              the dots evenly, like bubbles.
+            </p>
+            <pre><code><span class="c"># 48 MB scan in, ~10 MB .pfc out</span>
+npx cloud-dots-bake scan.fbx <span class="k">-o</span> face.pfc <span class="k">--poisson</span></code></pre>
+          </article>
+
+          <article class="step">
+            <p class="step__num">02 / LOAD</p>
+            <h3>A single binary</h3>
+            <p>
+              Everything ships in one <code>.pfc</code> file: positions, brightness and
+              surface normals in a compact header&#8209;plus&#8209;floats layout. No mesh,
+              no texture, no parsing cost at runtime.
+            </p>
+            <pre><code><span class="k">import</span> { loadCloud } <span class="k">from</span> <span class="s">'cloud-dots'</span>
+
+<span class="k">const</span> cloud = <span class="k">await</span> loadCloud(<span class="s">'/face.pfc'</span>, (p) =&gt; bar.set(p))</code></pre>
+          </article>
+
+          <article class="step">
+            <p class="step__num">03 / RENDER</p>
+            <h3>Two ways in</h3>
+            <p>
+              Drop the turnkey viewer on any element, or take the raw
+              <code>THREE.Points</code> object into a scene you already have,
+              React Three Fiber included.
+            </p>
+            <pre><code><span class="k">import</span> { ParticleFaceViewer } <span class="k">from</span> <span class="s">'cloud-dots'</span>
+
+<span class="k">const</span> viewer = <span class="k">new</span> ParticleFaceViewer(el, { src: <span class="s">'/face.pfc'</span> })
+viewer.pulse()</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <!-- features -->
+      <section class="section" id="features">
+        <h2><span>&plus;</span>What you get</h2>
+        <ul class="grid">
+          <li><h3>Reads as a solid</h3><p>Baked normals fade out back&#8209;facing dots, so the cloud never looks like a see&#8209;through shell, and they drive soft front lighting for free.</p></li>
+          <li><h3>Fake depth of field</h3><p>Dots away from the focal plane grow, soften and dim. One uniform moves the sharp plane wherever you want it.</p></li>
+          <li><h3>Assemble entrance</h3><p>Every dot eases in from its own scattered position with per&#8209;dot stagger. Replay it whenever you like.</p></li>
+          <li><h3>Alive by default</h3><p>Each dot floats on its own little orbit, and <code>pulse()</code> sends a ripple through the whole cloud.</p></li>
+          <li><h3>Uniform thinning</h3><p>Points are stored in random order, so the density knob thins the cloud evenly from 100% down to 5%.</p></li>
+          <li><h3>No build step</h3><p>Plain ESM source, three.js as a peer dependency, zero other runtime deps. Works with Vite, Next, or a bare import map.</p></li>
+        </ul>
+      </section>
+
+      <!-- api -->
+      <section class="section" id="api">
+        <h2><span>{ }</span>The knobs</h2>
+        <div class="api">
+          <table>
+            <tbody>
+              <tr><td>size</td><td>1.7</td><td>dot size in CSS px at 1 world unit</td></tr>
+              <tr><td>drift</td><td>0.0042</td><td>idle float amplitude, the alive wobble</td></tr>
+              <tr><td>focus</td><td>auto</td><td>camera distance of the sharp plane</td></tr>
+              <tr><td>dof</td><td>1</td><td>depth of field strength, 0 disables</td></tr>
+              <tr><td>density</td><td>1</td><td>fraction of baked points drawn</td></tr>
+              <tr><td>color</td><td>#f5f2ed</td><td>dot tint</td></tr>
+              <tr><td>fade</td><td>null</td><td>dissolve along local Y, melts a bust's chest</td></tr>
+              <tr><td>assemble</td><td>2.6</td><td>entrance duration in seconds, 0 skips</td></tr>
+              <tr><td>parallax</td><td>0.32 / 0.14</td><td>mouse tilt in radians at screen edges</td></tr>
+            </tbody>
+          </table>
+          <p class="api__note">
+            Everything visual is live via <code>viewer.set({ ... })</code>. Swap clouds
+            with <code>viewer.load(url)</code>, cached per URL.
+          </p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>MIT &copy; Diego Machado</p>
+        <p>
+          <a href="https://github.com/diegohmac/cloud-dots">github.com/diegohmac/cloud&#8209;dots</a>
+        </p>
+        <p class="footer__hint">This page is rendered by the library it describes.</p>
+      </footer>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

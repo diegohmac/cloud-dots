@@ -1,15 +1,16 @@
 import GUI from 'lil-gui'
 import { ParticleFaceViewer } from 'cloud-dots'
 
-const snap = new URLSearchParams(location.search).has('snap')
+const query = new URLSearchParams(location.search)
+const snap = query.has('snap')
 
+// Try your own bake: put it in example/public/ and open /?src=/yourfile.pfc
+// Face scans usually want framing options like:
+//   rotationY: -Math.PI / 2, offset: [0, -0.25, 0], position: [0, 0.12, 0.72],
+//   fade: { start: -0.38, end: 0, power: 1.6 }
 const viewer = new ParticleFaceViewer(document.getElementById('stage'), {
-  src: '/ben.pfc',
-  // model-specific framing: this scan faces +X and its face sits ~0.25 above center
-  rotationY: -Math.PI / 2,
-  offset: [0, -0.25, 0],
-  position: [0, 0.12, 0.72],
-  fade: { start: -0.38, end: 0, power: 1.6 },
+  src: query.get('src') || '/demo.pfc',
+  position: [0, 0, 0.2],
   assemble: snap ? 0 : 2.6,
 })
 

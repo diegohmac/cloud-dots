@@ -11,13 +11,16 @@
   "files": [
     "src",
     "cli",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "bin": {
     "cloud-dots-bake": "cli/bake.mjs"
   },
   "scripts": {
-    "dev": "vite example"
+    "dev": "vite example",
+    "dev:site": "vite site",
+    "demo-asset": "node scripts/make-demo-asset.mjs"
   },
   "peerDependencies": {
     "three": ">=0.160.0"
@@ -30,5 +33,18 @@
     "lil-gui": "^0.20.0",
     "three": "^0.182.0",
     "vite": "^8.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diegohmac/cloud-dots.git"
+  },
+  "homepage": "https://diegohmac.github.io/cloud-dots/",
+  "keywords": [
+    "three",
+    "threejs",
+    "webgl",
+    "particles",
+    "point-cloud",
+    "shader"
+  ]
 }

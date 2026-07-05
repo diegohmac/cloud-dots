@@ -165,11 +165,11 @@ export class ParticleFace {
     })
 
     this.points = new THREE.Points(undefined, this.material)
-    this._pivot = new THREE.Group()
-    this._pivot.rotation.y = o.rotationY
-    this._pivot.add(this.points)
+    this.pivot = new THREE.Group()
+    this.pivot.rotation.y = o.rotationY
+    this.pivot.add(this.points)
     this.object3d = new THREE.Group()
-    this.object3d.add(this._pivot)
+    this.object3d.add(this.pivot)
 
     this._elapsed = 0
     this._scatter = 0

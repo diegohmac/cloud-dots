@@ -1,3 +1,6 @@
 node_modules
 dist
 .DS_Store
+
+# private scan data stays local
+example/public/ben.pfc

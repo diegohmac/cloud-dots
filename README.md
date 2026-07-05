@@ -5,6 +5,8 @@ seen on studio team pages. A scan becomes ~370k tiny dots whose density and
 brightness follow the model's texture, with fake depth of field, per-dot idle
 drift, an assemble-in entrance, ripple pulses, and mouse parallax.
 
+**Live demo: https://diegohmac.github.io/cloud-dots/**
+
 Runtime input is **pre-baked `.pfc` binaries only** (fast to load, one file);
 the bundled CLI turns an FBX + texture into one.
 
@@ -110,8 +112,14 @@ npm install
 npm run dev
 ```
 
-Serves `example/` — a full-screen face with a lil-gui panel exposing every
-knob. The demo asset `example/public/ben.pfc` was baked with `--poisson`.
+Serves `example/` — a full-screen cloud with a lil-gui panel exposing every
+knob. The demo asset is a procedurally generated torus knot (regenerate it with
+`node scripts/make-demo-asset.mjs`); no scan data ships with this repo. To view
+your own bake, drop the file into `example/public/` and open
+`/?src=/yourfile.pfc`.
+
+The landing page in `site/` runs on the same library (`npm run dev:site`) and
+deploys to GitHub Pages from `.github/workflows/deploy.yml`.
 
 ## Notes
 
