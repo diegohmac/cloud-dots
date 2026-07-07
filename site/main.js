@@ -36,6 +36,11 @@ bind('ctlDrift', 'drift')
 bind('ctlFocus', 'focus')
 bind('ctlDensity', 'density')
 
+document.getElementById('ctlEntrance').addEventListener('change', (e) => {
+  viewer.set({ assembleStyle: e.target.value })
+  viewer.face?.replay()
+})
+
 document.getElementById('ctlPulse').addEventListener('click', () => viewer.pulse(2))
 document.getElementById('ctlReplay').addEventListener('click', () => viewer.face?.replay())
 

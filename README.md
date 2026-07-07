@@ -92,10 +92,12 @@ add `face.object3d` via `<primitive>`, call `face.update(dt)` in `useFrame`.
 | `color` | `#f5f2ed` | dot tint |
 | `fade` | `null` | `{ start, end, power }` dissolve along local Y |
 | `assemble` | `2.6` | entrance duration in seconds, `0` = skip |
+| `assembleStyle` | `'scatter'` | entrance style: `scatter`, `burst`, `rain`, `vortex`, `dissolve` |
 | `rotationY` | `0` | base orientation fix |
 | `offset` | `[0,0,0]` | pivot shift after bbox centering |
 
-All except `assemble`/`rotationY`/`offset` can be changed live via `set()`.
+All except `assemble`/`rotationY`/`offset` can be changed live via `set()` —
+switch `assembleStyle` and call `face.replay()` to watch a different entrance.
 
 ## The .pfc format
 

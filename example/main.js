@@ -16,6 +16,14 @@ const viewer = new ParticleFaceViewer(document.getElementById('stage'), {
 
 await viewer.ready
 
+// debug hooks for screenshots: ?style=vortex freezes nothing, adding
+// &progress=0.5 pins the entrance mid-flight
+if (query.get('style')) viewer.set({ assembleStyle: query.get('style') })
+if (query.get('progress')) {
+  viewer.face.options.assemble = 0
+  viewer.face.material.uniforms.uProgress.value = +query.get('progress')
+}
+
 const params = {
   size: 1.7,
   drift: 0.0042,
@@ -23,10 +31,16 @@ const params = {
   dof: 1,
   density: 1,
   color: '#f5f2ed',
+  entrance: viewer.face.options.assembleStyle,
   pulse: () => viewer.pulse(2),
   replay: () => viewer.face.replay(),
 }
 const gui = new GUI({ title: 'CLOUD-DOTS' })
+gui.add(params, 'entrance', ['scatter', 'burst', 'rain', 'vortex', 'dissolve'])
+  .onChange((v) => {
+    viewer.set({ assembleStyle: v })
+    viewer.face.replay()
+  })
 gui.add(params, 'size', 0.4, 5, 0.05).onChange((v) => viewer.set({ size: v }))
 gui.add(params, 'drift', 0, 0.02, 0.0005).onChange((v) => viewer.set({ drift: v }))
 gui.add(params, 'focus', 0.6, 2.2, 0.01).onChange((v) => viewer.set({ focus: v }))

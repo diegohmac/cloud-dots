@@ -12,6 +12,7 @@ const VERT = /* glsl */ `
   uniform float uSize;
   uniform float uDrift;
   uniform float uDof;
+  uniform float uStyle; // assemble style: 0 scatter, 1 burst, 2 rain, 3 vortex, 4 dissolve
   uniform vec3 uFade; // fadeStart, fadeEnd, fadePower (local Y dissolve)
 
   varying float vBrightness;
@@ -32,12 +33,37 @@ const VERT = /* glsl */ `
       hash(position + 5.3)
     ) - 0.5);
 
-    // staggered assemble-in
-    float prog = clamp(uProgress * 1.25 - h * 0.25, 0.0, 1.0);
+    // staggered assemble-in; dissolve uses a wider per-dot lag so dots pop
+    // in one by one instead of arriving together
+    float isDissolve = step(3.5, uStyle);
+    float prog = mix(
+      clamp(uProgress * 1.25 - h * 0.25, 0.0, 1.0),
+      clamp(uProgress * 2.0 - h, 0.0, 1.0),
+      isDissolve
+    );
     float ease = 1.0 - pow(1.0 - prog, 3.0);
+    float back = 1.0 - ease; // how far from settled this dot still is
 
     vec3 pos = position;
-    pos += dir * (1.0 - ease) * (0.9 + 1.4 * h);
+    if (uStyle < 0.5) {
+      // scatter: fly in from a random direction (the classic swarm)
+      pos += dir * back * (0.9 + 1.4 * h);
+    } else if (uStyle < 1.5) {
+      // burst: compressed at the core, exploding outward into place
+      pos = position * mix(0.04, 1.0, ease) + dir * back * 0.08;
+    } else if (uStyle < 2.5) {
+      // rain: drop in from above in a staggered curtain
+      pos.y += back * (1.1 + 0.9 * h);
+      pos.x += dir.x * back * 0.12;
+    } else if (uStyle < 3.5) {
+      // vortex: spiral in around Y while the angle unwinds
+      float ang = back * (2.5 + 3.5 * h);
+      float ca = cos(ang);
+      float sa = sin(ang);
+      pos.xz = mat2(ca, -sa, sa, ca) * pos.xz;
+      pos *= 1.0 + back * 0.45;
+    }
+    // dissolve (4): no displacement, dots materialize in place
 
     // idle drift: every dot floats on its own little orbit
     float ph = h * 6.2831;
@@ -118,6 +144,15 @@ export function buildGeometry(cloud) {
   return geometry
 }
 
+/** Entrance styles: how dots travel to their spot while assembling. */
+export const ASSEMBLE_STYLES = {
+  scatter: 0,  // fly in from random directions (default)
+  burst: 1,    // explode outward from the core
+  rain: 2,     // drop in from above
+  vortex: 3,   // spiral in around the Y axis
+  dissolve: 4, // materialize in place, dot by dot
+}
+
 export const DEFAULTS = {
   size: 1.7,          // dot size in CSS px at 1 world unit
   drift: 0.0042,      // idle float amplitude (world units)
@@ -129,6 +164,7 @@ export const DEFAULTS = {
   rotationY: 0,       // base orientation fix, e.g. -Math.PI / 2
   fade: null,         // { start, end, power } dissolve along local Y, or null
   assemble: 2.6,      // seconds for the entrance; 0 skips it
+  assembleStyle: 'scatter', // one of ASSEMBLE_STYLES
 }
 
 /**
@@ -155,6 +191,7 @@ export class ParticleFace {
         uSize: { value: o.size },
         uDrift: { value: o.drift },
         uDof: { value: o.dof },
+        uStyle: { value: ASSEMBLE_STYLES[o.assembleStyle] ?? 0 },
         uColor: { value: new THREE.Color(o.color) },
         uFade: {
           value: o.fade
@@ -213,7 +250,7 @@ export class ParticleFace {
     this.material.uniforms.uProgress.value = 0
   }
 
-  /** Update visual knobs: size, drift, focus, dof, density, color, fade. */
+  /** Update visual knobs: size, drift, focus, dof, density, color, fade, assembleStyle. */
   set(values) {
     const u = this.material.uniforms
     const map = { size: 'uSize', drift: 'uDrift', focus: 'uFocus', dof: 'uDof' }
@@ -222,6 +259,7 @@ export class ParticleFace {
       if (map[key]) u[map[key]].value = value
       else if (key === 'color') u.uColor.value.set(value)
       else if (key === 'density') this._applyDensity()
+      else if (key === 'assembleStyle') u.uStyle.value = ASSEMBLE_STYLES[value] ?? 0
       else if (key === 'fade') {
         u.uFade.value.set(value?.start ?? 0, value?.end ?? 0, value ? value.power ?? 1 : 0)
       }
